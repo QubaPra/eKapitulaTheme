@@ -13,12 +13,17 @@ $first    = isset($segments[0]) ? $segments[0] : '';
 // Prosta sanityzacja – tylko litery, cyfry, myślnik i podkreślenie
 $first = preg_replace('/[^a-zA-Z0-9_-]/', '', $first);
 
-// Określ docelowy plik HTML
-$target = $pages_dir . ($first !== '' ? $first . '.html' : 'index.html');
+// Określ docelowy plik - najpierw sprawdź .php, potem .html
+$target_php = $pages_dir . ($first !== '' ? $first . '.php' : 'index.php');
+$target_html = $pages_dir . ($first !== '' ? $first . '.html' : 'index.html');
 
-if (file_exists($target)) {
+// Priorytet: najpierw PHP (dynamiczny), potem HTML (statyczny)
+if (file_exists($target_php)) {
+    include($target_php);
+    exit;
+} elseif (file_exists($target_html)) {
     header('Content-Type: text/html; charset=UTF-8');
-    readfile($target);
+    readfile($target_html);
     exit;
 }
 
