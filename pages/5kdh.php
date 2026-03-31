@@ -122,7 +122,7 @@ $content = preg_replace_callback(
 // Napraw obfuskowany atrybut type w skryptach (Cloudflare obfuskacja)
 // Zmienia type="losowy-string-text/javascript" na type="text/javascript"
 $content = preg_replace_callback(
-    '/type="[a-f0-9\-]*text\/javascript"/',
+    '/type="[^"]*text\/javascript"/',
     function($matches) {
         return 'type="text/javascript"';
     },
