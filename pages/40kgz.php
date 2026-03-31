@@ -23,7 +23,7 @@ $content = false;
 $use_cache = false;
 
 // Sprawdź czy istnieje cache i czy jest aktualny
-if (file_exists($cache_file)) {
+if (file_exists($cache_file) && !isset($_GET['nocache'])) {
     $cache_age = time() - filemtime($cache_file);
     if ($cache_age < $cache_duration) {
         $content = file_get_contents($cache_file);
@@ -120,6 +120,9 @@ $content = preg_replace_callback(
     $content
 );
 
+// Dodaj data-cfasync="false" do tagów <script> aby wyłączyć Cloudflare Rocket Loader (psuje ładowanie CDN np. Tailwind)
+$content = preg_replace('/<script\b(?![^>]*\bdata-cfasync=)/i', '<script data-cfasync="false"', $content);
+
 // Napraw obfuskowany atrybut type w skryptach (Cloudflare obfuskacja)
 // Zmienia type="losowy-string-text/javascript" na type="text/javascript"
 $content = preg_replace_callback(
@@ -167,7 +170,7 @@ $content = preg_replace_callback(
 
 // Napraw linki href (działaj ostrożnie — sprawdź czy to nie są fragmenty ani linki zewnętrzne)
 $content = preg_replace_callback(
-    '/href="(?![\#|https:\/\/|\/|mailto:|tel:|javascript:|data:ftp:\/\/])([^"]+)"/',
+    '/href="(?!#|https?:\/\/|\/|mailto:|tel:|javascript:|data:|ftp:\/\/)([^"]+)"/i',
     function($matches) use ($github_raw_base) {
         $path = normalize_path($matches[1]);
         // Nie podmieniaj czystych fragmentów typu #sekcja
