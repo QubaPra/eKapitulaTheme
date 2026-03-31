@@ -100,39 +100,74 @@ if ($content === false) {
 // Napraw wszystkie względne ścieżki na bezwzględne URL GitHub Raw
 $github_raw_base = "https://raw.githubusercontent.com/{$github_owner}/{$github_repo}/{$github_branch}/";
 
-// Zamienia src="ścieżka/plik.ext" na src="https://raw.githubusercontent.com/...ścieżka/plik.ext"
-// Działa dla wszystkich plików, niezależnie od nazwy czy lokalizacji
+// Funkcja pomocnicza do czyszczenia ścieżek
+function normalize_path($path) {
+    // Usuń ./ na początku jeśli jest
+    if (strpos($path, './') === 0) {
+        $path = substr($path, 2);
+    }
+    return $path;
+}
+
+// Napraw atrybuty src (obrazki, skrypty itp.)
 $content = preg_replace_callback(
-    '/src="(?!https:\/\/|data:)([^"]+)"/',
+    '/src="(?!https:\/\/|data:|\/\/)([^"]+)"/',
     function($matches) use ($github_raw_base) {
-        // Usuń ./ jeśli jest na początku ścieżki
-        $path = ltrim($matches[1], './');
+        $path = normalize_path($matches[1]);
         return 'src="' . $github_raw_base . $path . '"';
     },
     $content
 );
 
-// Napraw również tła CSS (background-image, --hero-img itp.)
+// Napraw atrybuty srcset (responsywne obrazki)
 $content = preg_replace_callback(
-    "/url\(['\"]?(?!https:\/\/|data:)([^'\")\s]+)['\"]?\)/",
+    '/srcset="([^"]*)"/',
     function($matches) use ($github_raw_base) {
-        // Usuń ./ jeśli jest na początku ścieżki
-        $path = ltrim($matches[1], './');
-        return "url('" . $github_raw_base . $path . "')";
+        $srcset = $matches[1];
+        // Obsłuż format: "image.png 1x, image2.png 2x"
+        return 'srcset="' . preg_replace_callback(
+            '/(?!https:\/\/|data:|\/\/)([^\s,]+)(\s+[0-9.]+[wx])?,?/i',
+            function($m) use ($github_raw_base) {
+                if (strpos($m[1], 'https://') === 0 || strpos($m[1], 'data:') === 0) {
+                    return $m[0];
+                }
+                $path = normalize_path($m[1]);
+                return $github_raw_base . $path . ($m[2] ?? '');
+            },
+            $srcset
+        ) . '"';
     },
     $content
 );
 
-// Napraw linki href (działaj ostrożnie — sprawdź czy to fragment)
+// Napraw tła CSS (background-image, background, --hero-img itp.)
 $content = preg_replace_callback(
-    '/href="(?!#|https:\/\/|\/|mailto:|tel:)([^"]+)"/',
+    "/url\(['\"]?(?!https:\/\/|data:|\/\/)([^'\")\s]+)['\"]?\)/i",
     function($matches) use ($github_raw_base) {
-        $path = ltrim($matches[1], './');
-        // Sprawdzenie czy to plik (.html, .php, itp.) czy katalog
-        if (strpos($path, '.') !== false || !str_ends_with($path, '/')) {
+        $path = normalize_path($matches[1]);
+        // Zwróć property CSS - jeśli ścieżka zawiera spację, użyj cudzysłowu
+        if (strpos($path, ' ') !== false) {
+            return "url('" . $github_raw_base . $path . "')";
+        }
+        return 'url(' . $github_raw_base . $path . ')';
+    },
+    $content
+);
+
+// Napraw linki href (działaj ostrożnie — sprawdź czy to nie są fragmenty ani linki zewnętrzne)
+$content = preg_replace_callback(
+    '/href="(?![\#|https:\/\/|\/|mailto:|tel:|javascript:|data:ftp:\/\/])([^"]+)"/',
+    function($matches) use ($github_raw_base) {
+        $path = normalize_path($matches[1]);
+        // Nie podmieniaj czystych fragmentów typu #sekcja
+        if ($path === '' || strpos($path, '#') === 0) {
+            return 'href="' . $matches[1] . '"';
+        }
+        // Podmieniaj na .html/.json/.xml itd. ale nie zwykłe katalogi
+        if (preg_match('/\.\w+$/', $path) || strpos($path, '.') !== false) {
             return 'href="' . $github_raw_base . $path . '"';
         }
-        return $matches[0]; // Zostaw katalogi bez zmian
+        return 'href="' . $matches[1] . '"';
     },
     $content
 );
