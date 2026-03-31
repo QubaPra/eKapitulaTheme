@@ -59,15 +59,21 @@ function load_github_page($owner, $repo, $branch = 'main', $index_path = 'index.
     };
 
     // Src
-    $content = preg_replace_callback('/src="([^"]+)"/i', fn($m) => 'src="' . $fix_path($m[1]) . '"', $content);
+    $content = preg_replace_callback('/src="([^"]+)"/i', function($m) use ($fix_path) {
+        return 'src="' . $fix_path($m[1]) . '"';
+    }, $content);
     
     // Href (tylko wewnątrz zasobów, np. css. Pomija #, mailto, tel)
     $content = preg_replace_callback('/href="(?!#|https?:\/\/|\/\/|mailto:|tel:|javascript:|data:|ftp:\/\/)([^"]+)"/i', 
-        fn($m) => 'href="' . $fix_path($m[1]) . '"', $content);
+        function($m) use ($fix_path) {
+            return 'href="' . $fix_path($m[1]) . '"';
+        }, $content);
 
     // CSS url()
     $content = preg_replace_callback("/url\(['\"]?([^'\")\s]+)['\"]?\)/i", 
-        fn($m) => "url('" . $fix_path($m[1]) . "')", $content);
+        function($m) use ($fix_path) {
+            return "url('" . $fix_path($m[1]) . "')";
+        }, $content);
 
     // Srcset w obrazkach
     $content = preg_replace_callback('/srcset="([^"]*)"/i', function($matches) use ($fix_path) {
