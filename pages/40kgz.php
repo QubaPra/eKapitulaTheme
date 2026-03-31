@@ -1,7 +1,13 @@
 <?php
 
-// URL do GitHub Pages
-$github_pages_url = 'https://github.com/Antynnon/40_kgz/';
+// Parametry GitHub (dostosuj do swojego repozytorium)
+$github_owner = 'Antynnon';
+$github_repo = '40_kgz';
+$github_branch = 'main'; // branch zawierający pliki
+$github_index_path = 'index.html'; // ścieżka do index.html w repo
+
+// URL do surowej zawartości z GitHub Raw
+$github_raw_url = "https://raw.githubusercontent.com/{$github_owner}/{$github_repo}/{$github_branch}/{$github_index_path}";
 
 // Ścieżka do cache
 $cache_dir = get_stylesheet_directory() . '/cache/';
@@ -28,7 +34,7 @@ if (file_exists($cache_file)) {
 // Jeśli brak cache lub jest przestarzały, pobierz ze źródła
 if ($content === false) {
     // Użyj wp_remote_get dla lepszej kompatybilności z WordPressem
-    $response = wp_remote_get($github_pages_url, array(
+    $response = wp_remote_get($github_raw_url, array(
         'timeout' => 15,
         'sslverify' => true
     ));
@@ -92,16 +98,17 @@ if ($content === false) {
     }
 }
 
-// Dynamicznie napraw wszystkie ścieżki do obrazów
-// Zastępuje src="..." z relatywnymi ścieżkami na pełne URL GitHub Raw
-$github_raw_base = 'https://raw.githubusercontent.com/Antynnon/40_kgz/main/';
+// Napraw wszystkie względne ścieżki na bezwzględne URL GitHub Raw
+$github_raw_base = "https://raw.githubusercontent.com/{$github_owner}/{$github_repo}/{$github_branch}/";
 
 // Zamienia src="ścieżka/plik.ext" na src="https://raw.githubusercontent.com/...ścieżka/plik.ext"
 // Działa dla wszystkich plików, niezależnie od nazwy czy lokalizacji
 $content = preg_replace_callback(
     '/src="(?!https:\/\/|data:)([^"]+)"/',
     function($matches) use ($github_raw_base) {
-        return 'src="' . $github_raw_base . $matches[1] . '"';
+        // Usuń ./ jeśli jest na początku ścieżki
+        $path = ltrim($matches[1], './');
+        return 'src="' . $github_raw_base . $path . '"';
     },
     $content
 );
@@ -110,7 +117,23 @@ $content = preg_replace_callback(
 $content = preg_replace_callback(
     "/url\(['\"]?(?!https:\/\/|data:)([^'\")\s]+)['\"]?\)/",
     function($matches) use ($github_raw_base) {
-        return "url('" . $github_raw_base . $matches[1] . "')";
+        // Usuń ./ jeśli jest na początku ścieżki
+        $path = ltrim($matches[1], './');
+        return "url('" . $github_raw_base . $path . "')";
+    },
+    $content
+);
+
+// Napraw linki href (działaj ostrożnie — sprawdź czy to fragment)
+$content = preg_replace_callback(
+    '/href="(?!#|https:\/\/|\/|mailto:|tel:)([^"]+)"/',
+    function($matches) use ($github_raw_base) {
+        $path = ltrim($matches[1], './');
+        // Sprawdzenie czy to plik (.html, .php, itp.) czy katalog
+        if (strpos($path, '.') !== false || !str_ends_with($path, '/')) {
+            return 'href="' . $github_raw_base . $path . '"';
+        }
+        return $matches[0]; // Zostaw katalogi bez zmian
     },
     $content
 );

@@ -1,12 +1,12 @@
 <?php
-/**
- * Dynamiczne proxy dla strony 5 KDH Piorun z GitHub Pages
- * Pobiera zawartość z https://5kdhpiorun.github.io/5kdhpiorun/
- * Cache'uje na 1 godzinę dla wydajności
- */
+// Parametry GitHub (dostosuj do swojego repozytorium)
+$github_owner = '5kdhpiorun';
+$github_repo = '5kdhpiorun';
+$github_branch = 'main'; // branch zawierający pliki
+$github_index_path = 'index.html'; // ścieżka do index.html w repo
 
-// URL do GitHub Pages
-$github_pages_url = 'https://5kdhpiorun.github.io/5kdhpiorun/';
+// URL do surowej zawartości z GitHub Raw
+$github_raw_url = "https://raw.githubusercontent.com/{$github_owner}/{$github_repo}/{$github_branch}/{$github_index_path}";
 
 // Ścieżka do cache
 $cache_dir = get_stylesheet_directory() . '/cache/';
@@ -33,7 +33,7 @@ if (file_exists($cache_file)) {
 // Jeśli brak cache lub jest przestarzały, pobierz ze źródła
 if ($content === false) {
     // Użyj wp_remote_get dla lepszej kompatybilności z WordPressem
-    $response = wp_remote_get($github_pages_url, array(
+    $response = wp_remote_get($github_raw_url, array(
         'timeout' => 15,
         'sslverify' => true
     ));
@@ -87,9 +87,9 @@ if ($content === false) {
 <body>
     <div class="error-box">
         <h1>⚠️ Strona Tymczasowo Niedostępna</h1>
-        <p>Nie udało się pobrać zawartości strony 5 KDH Piorun z GitHub Pages.</p>
+        <p>Nie udało się pobrać zawartości strony 5 KDH Piorun z GitHub Raw API.</p>
         <p>Możesz odwiedzić stronę bezpośrednio pod adresem:</p>
-        <p><a href="https://5kdhpiorun.github.io/5kdhpiorun/" target="_blank">5kdhpiorun.github.io/5kdhpiorun</a></p>
+        <p><a href="https://github.com/5kdhpiorun/5kdhpiorun" target="_blank">github.com/5kdhpiorun/5kdhpiorun</a></p>
     </div>
 </body>
 </html>';
@@ -97,16 +97,17 @@ if ($content === false) {
     }
 }
 
-// Dynamicznie napraw wszystkie ścieżki do obrazów
-// Zastępuje src="..." z relatywnymi ścieżkami na pełne URL GitHub Pages
-$github_pages_base = 'https://5kdhpiorun.github.io/5kdhpiorun/';
+// Napraw wszystkie względne ścieżki na bezwzględne URL GitHub Raw
+$github_raw_base = "https://raw.githubusercontent.com/{$github_owner}/{$github_repo}/{$github_branch}/";
 
-// Zamienia src="ścieżka/plik.ext" na src="https://5kdhpiorun.github.io/5kdhpiorun/ścieżka/plik.ext"
+// Zamienia src="ścieżka/plik.ext" na src="https://raw.githubusercontent.com/...ścieżka/plik.ext"
 // Działa dla wszystkich plików, niezależnie od nazwy czy lokalizacji
 $content = preg_replace_callback(
     '/src="(?!https:\/\/|data:)([^"]+)"/',
-    function($matches) use ($github_pages_base) {
-        return 'src="' . $github_pages_base . $matches[1] . '"';
+    function($matches) use ($github_raw_base) {
+        // Usuń ./ jeśli jest na początku ścieżki
+        $path = ltrim($matches[1], './');
+        return 'src="' . $github_raw_base . $path . '"';
     },
     $content
 );
@@ -114,8 +115,24 @@ $content = preg_replace_callback(
 // Napraw również tła CSS (background-image, --hero-img itp.)
 $content = preg_replace_callback(
     "/url\(['\"]?(?!https:\/\/|data:)([^'\")\s]+)['\"]?\)/",
-    function($matches) use ($github_pages_base) {
-        return "url('" . $github_pages_base . $matches[1] . "')";
+    function($matches) use ($github_raw_base) {
+        // Usuń ./ jeśli jest na początku ścieżki
+        $path = ltrim($matches[1], './');
+        return "url('" . $github_raw_base . $path . "')";
+    },
+    $content
+);
+
+// Napraw linki href (działaj ostrożnie — sprawdź czy to fragment)
+$content = preg_replace_callback(
+    '/href="(?!#|https:\/\/|\/|mailto:|tel:)([^"]+)"/',
+    function($matches) use ($github_raw_base) {
+        $path = ltrim($matches[1], './');
+        // Sprawdzenie czy to plik (.html, .php, itp.) czy katalog
+        if (strpos($path, '.') !== false || !str_ends_with($path, '/')) {
+            return 'href="' . $github_raw_base . $path . '"';
+        }
+        return $matches[0]; // Zostaw katalogi bez zmian
     },
     $content
 );
@@ -127,7 +144,7 @@ header('Content-Type: text/html; charset=UTF-8');
 if ($use_cache) {
     echo "<!-- Wczytano z cache: " . date('Y-m-d H:i:s', filemtime($cache_file)) . " -->\n";
 } else {
-    echo "<!-- Pobrano świeżo z GitHub Pages: " . date('Y-m-d H:i:s') . " -->\n";
+    echo "<!-- Pobrano świeżo z GitHub Raw API: " . date('Y-m-d H:i:s') . " -->\n";
 }
 
 echo $content;
