@@ -1,16 +1,11 @@
 <?php
-/**
- * Dynamiczne proxy dla strony 5 KDH Piorun z GitHub Pages
- * Pobiera zawartość z https://5kdhpiorun.github.io/5kdhpiorun/
- * Cache'uje na 1 godzinę dla wydajności
- */
 
 // URL do GitHub Pages
-$github_pages_url = 'https://5kdhpiorun.github.io/5kdhpiorun/';
+$github_pages_url = 'https://github.com/Antynnon/40_kgz/';
 
 // Ścieżka do cache
 $cache_dir = get_stylesheet_directory() . '/cache/';
-$cache_file = $cache_dir . '5kdh_cache.html';
+$cache_file = $cache_dir . '40kgz_cache.html';
 $cache_duration = 3600; // 1 godzina w sekundach
 
 // Utwórz katalog cache jeśli nie istnieje
@@ -55,7 +50,7 @@ if ($content === false) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5 KDH Piorun - Strona Niedostępna</title>
+    <title>40 KGZ Bractwo Smoczej Doliny - Strona Niedostępna</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -87,9 +82,9 @@ if ($content === false) {
 <body>
     <div class="error-box">
         <h1>⚠️ Strona Tymczasowo Niedostępna</h1>
-        <p>Nie udało się pobrać zawartości strony 5 KDH Piorun z GitHub Pages.</p>
+        <p>Nie udało się pobrać zawartości strony 40 KGZ Bractwo Smoczej Doliny z GitHub Pages.</p>
         <p>Możesz odwiedzić stronę bezpośrednio pod adresem:</p>
-        <p><a href="https://5kdhpiorun.github.io/5kdhpiorun/" target="_blank">5kdhpiorun.github.io/5kdhpiorun</a></p>
+        <p><a href="https://github.com/Antynnon/40_kgz/" target="_blank">github.com/Antynnon/40_kgz</a></p>
     </div>
 </body>
 </html>';
@@ -98,15 +93,15 @@ if ($content === false) {
 }
 
 // Dynamicznie napraw wszystkie ścieżki do obrazów
-// Zastępuje src="..." z relatywnymi ścieżkami na pełne URL GitHub Pages
-$github_pages_base = 'https://5kdhpiorun.github.io/5kdhpiorun/';
+// Zastępuje src="..." z relatywnymi ścieżkami na pełne URL GitHub Raw
+$github_raw_base = 'https://raw.githubusercontent.com/Antynnon/40_kgz/main/';
 
-// Zamienia src="ścieżka/plik.ext" na src="https://5kdhpiorun.github.io/5kdhpiorun/ścieżka/plik.ext"
+// Zamienia src="ścieżka/plik.ext" na src="https://raw.githubusercontent.com/...ścieżka/plik.ext"
 // Działa dla wszystkich plików, niezależnie od nazwy czy lokalizacji
 $content = preg_replace_callback(
     '/src="(?!https:\/\/|data:)([^"]+)"/',
-    function($matches) use ($github_pages_base) {
-        return 'src="' . $github_pages_base . $matches[1] . '"';
+    function($matches) use ($github_raw_base) {
+        return 'src="' . $github_raw_base . $matches[1] . '"';
     },
     $content
 );
@@ -114,8 +109,8 @@ $content = preg_replace_callback(
 // Napraw również tła CSS (background-image, --hero-img itp.)
 $content = preg_replace_callback(
     "/url\(['\"]?(?!https:\/\/|data:)([^'\")\s]+)['\"]?\)/",
-    function($matches) use ($github_pages_base) {
-        return "url('" . $github_pages_base . $matches[1] . "')";
+    function($matches) use ($github_raw_base) {
+        return "url('" . $github_raw_base . $matches[1] . "')";
     },
     $content
 );
