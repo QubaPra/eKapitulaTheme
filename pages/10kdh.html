@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>10 KDH Dzieci Słońca – Hufiec Kraków-Krowodrza</title>
+    <link rel="icon" type="image/png" href="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/noon.png" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --sun-yellow: #f1c40f;
+        --navy-blue: #0a192f;
+        --deep-dark: #050c16;
+        --card-bg: #121d2d;
+        --text-light: #f4f4f4;
+        --text-gray: #a0a0a0;
+        --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: var(--deep-dark);
+        color: var(--text-light);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* --- Nawigacja --- */
+      .navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        padding: 1rem 5%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(5, 12, 22, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        border-bottom: 1px solid var(--navy-blue);
+      }
+      .logo {
+        font-weight: 800;
+        color: var(--sun-yellow);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+      }
+      .nav-links a {
+        text-decoration: none;
+        color: var(--text-gray);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        transition: var(--transition);
+      }
+      .nav-links a:hover {
+        color: var(--sun-yellow);
+      }
+
+      /* --- Hero Section --- */
+      .hero {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 0 10%;
+        background:
+          linear-gradient(
+            to right,
+            rgba(5, 12, 22, 0.92) 32%,
+            rgba(5, 12, 22, 0.68) 62%,
+            rgba(10, 25, 47, 0.42) 100%
+          ),
+          url("https://krowodrza.zhr.pl/wp-content/uploads/2026/04/10kdh.jpg");
+        background-size: cover;
+        background-position: center;
+      }
+      .hero-content {
+        max-width: 800px;
+      }
+      .hero-tag {
+        color: var(--sun-yellow);
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        display: block;
+      }
+      .hero-title {
+        font-size: clamp(2.5rem, 6vw, 3.5rem);
+        line-height: 1.1;
+        font-weight: 800;
+      }
+      .hero-name {
+        text-align: center;
+      }
+      .btn-cta {
+        padding: 1.2rem 2.5rem;
+        background: var(--sun-yellow);
+        color: var(--navy-blue);
+        text-decoration: none;
+        font-weight: 700;
+        border-radius: 5px;
+        transition: var(--transition);
+        display: inline-block;
+        text-transform: uppercase;
+      }
+      .btn-cta:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(241, 196, 15, 0.3);
+      }
+
+      /* --- Sekcje Ogólne --- */
+      section {
+        padding: 100px 10%;
+      }
+      .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+      }
+      .section-title {
+        font-size: 2.5rem;
+        color: var(--sun-yellow);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+      }
+      .section-subtitle {
+        color: var(--text-gray);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      /* --- O Drużynie (Cards) --- */
+      .about-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+      }
+      .info-card {
+        background: var(--card-bg);
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        border-bottom: 4px solid var(--navy-blue);
+        transition: var(--transition);
+        text-align: center;
+      }
+      .info-card i {
+        font-size: 3rem;
+        color: var(--sun-yellow);
+        margin-bottom: 1.5rem;
+      }
+      .info-card:hover {
+        transform: translateY(-10px);
+        border-bottom-color: var(--sun-yellow);
+      }
+
+      /* --- Zastępy --- */
+      .zastepy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2.5rem;
+      }
+      .zastep-card {
+        background: var(--card-bg);
+        border-radius: 25px;
+        overflow: hidden;
+        transition: var(--transition);
+      }
+      .zastep-img {
+        width: 100%;
+        height: 280px;
+        background: #1a2a3a;
+        position: relative;
+      }
+      .zastep-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .zastep-badge {
+        color: var(--sun-yellow);
+        font-weight: 700;
+        border-radius: 50px;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+      .zastep-content {
+        padding: 2rem;
+      }
+      .zastep-name {
+        font-size: 1.8rem;
+        color: var(--sun-yellow);
+      }
+      .zastep-details {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+      }
+      .zastep-details strong {
+        color: var(--text-light);
+      }
+
+      /* --- Kadra --- */
+      .kadra-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4rem;
+      }
+      .kadra-main {
+        text-align: center;
+        justify-content: center;
+      }
+      .kadra-subs {
+        display: flex;
+        gap: 4rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .osoba-card {
+        text-align: center;
+        width: 220px;
+      }
+      .osoba-foto {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: var(--navy-blue);
+        margin: 0 auto 1.5rem;
+        border: 4px solid var(--navy-blue);
+        overflow: hidden;
+        transition: var(--transition);
+      }
+      .osoba-card:hover .osoba-foto {
+        border-color: var(--sun-yellow);
+        transform: scale(1.05);
+      }
+      .osoba-foto img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+      .osoba-foto img.quality-photo {
+        image-rendering: auto;
+        image-rendering: -webkit-optimize-contrast;
+      }
+      .osoba-role {
+        color: var(--sun-yellow);
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* --- Galeria --- */
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+      }
+      .gallery-card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: var(--transition);
+      }
+      .gallery-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--sun-yellow);
+      }
+      .gallery-card img {
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+      }
+      .gallery-card img.quality-photo {
+        object-position: center;
+        image-rendering: auto;
+        image-rendering: -webkit-optimize-contrast;
+      }
+      .gallery-card-body {
+        padding: 1.2rem 1.2rem 1.4rem;
+      }
+      .gallery-card-title {
+        color: var(--sun-yellow);
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
+      .gallery-card-desc {
+        color: var(--text-gray);
+        font-size: 0.95rem;
+      }
+      .gallery-link {
+        display: inline-block;
+        margin-top: 1rem;
+        text-decoration: none;
+        color: var(--navy-blue);
+        background: var(--sun-yellow);
+        padding: 0.55rem 1rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        transition: var(--transition);
+      }
+      .gallery-link-disabled {
+        color: "gray";
+      }
+      .gallery-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(241, 196, 15, 0.25);
+      }
+
+      /* --- Kontakt & Mapa --- */
+      .contact-layout {
+        display: flex;
+        justify-content: space-around;
+        gap: 4rem;
+        background: var(--card-bg);
+        padding: 4rem;
+        border-radius: 30px;
+      }
+      .social-links {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      .social-links a {
+        width: 50px;
+        height: 50px;
+        background: var(--navy-blue);
+        color: var(--sun-yellow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+      }
+      .social-links a:hover {
+        background: var(--sun-yellow);
+        color: var(--navy-blue);
+        transform: translateY(-5px);
+      }
+
+      .footer {
+        padding: 3rem;
+        text-align: center;
+        border-top: 1px solid #111;
+        color: var(--text-gray);
+        font-size: 0.8rem;
+      }
+
+      @media (max-width: 992px) {
+        .contact-layout {
+          grid-template-columns: 1fr;
+        }
+        section {
+          padding: 80px 5%;
+        }
+        .hero {
+          text-align: center;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo">10 KDH Dzieci Słońca</div>
+      <ul class="nav-links">
+        <li><a href="#o-nas">O nas</a></li>
+        <li><a href="#zastepy">Zastępy</a></li>
+        <li><a href="#kadra">Kadra</a></li>
+        <li><a href="#galeria">Galeria</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+    </nav>
+
+    <section class="hero" id="home">
+      <div class="hero-content" data-aos="fade-right">
+        <h1 class="hero-title">
+          10 Krakowska Drużyna Harcerzy "Dzieci Słońca"
+        </h1>
+        <h2
+          style="
+            margin-bottom: 1rem;
+            color: var(--text-gray);
+            font-size: 2.2rem;
+          "
+        >
+          im. Andrzeja Małkowskiego
+        </h2>
+        <a href="#kontakt" class="btn-cta">Zaciągnij się</a>
+      </div>
+    </section>
+
+    <section id="o-nas">
+      <div class="section-header" data-aos="fade-up">
+        <h2 class="section-title">Nasza Drużyna</h2>
+        <p class="section-subtitle">
+          Dzieci Słońca to nie tylko nazwa – to styl życia, optymizm i ciągły
+          rozwój pełny przygód.
+        </p>
+      </div>
+      <div class="about-grid">
+        <div class="info-card" data-aos="zoom-in">
+          <i class="fas fa-sun"></i>
+          <h3>Wychowanie</h3>
+          <p>
+            W naszej drużynie kształtujemy postawy odpowiedzialności, współpracy
+            i wzajemnego szacunku. Uczymy zaradności, samodzielności oraz
+            gotowości do podejmowania wyzwań i niesienia pomocy innym.
+            Przekazujemy wartości harcerskie, które pomagają rozwijać charakter
+            i budować silne relacje.
+          </p>
+        </div>
+
+        <div class="info-card" data-aos="zoom-in" data-aos-delay="100">
+          <i class="fas fa-compass"></i>
+          <h3>Przygoda</h3>
+          <p>
+            Przygoda w naszej drużynie to odkrywanie nowych wyzwań i rozwijanie
+            umiejętności poprzez działanie. Poznajemy różnorodne techniki
+            harcerskie, uczymy się praktycznych rzeczy i zdobywamy sprawności,
+            które motywują do dalszego rozwoju. Każda zbiórka i wyjazd to okazja
+            do przeżycia czegoś nowego i niezapomnianego.
+          </p>
+        </div>
+        <div class="info-card" data-aos="zoom-in" data-aos-delay="200">
+          <i class="fas fa-users"></i>
+          <h3>Braterstwo</h3>
+          <p>
+            Braterstwo w naszej drużynie to budowanie silnych więzi opartych na
+            zaufaniu i wzajemnym wsparciu. Tworzymy miejsce, w którym każdy
+            czuje się ważny i może liczyć na innych. Razem przeżywamy sukcesy,
+            pokonujemy trudności i uczymy się bycia częścią zespołu.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="zastepy" style="background: var(--deep-dark)">
+      <div class="section-header" data-aos="fade-up">
+        <h2 class="section-title">Zastępy</h2>
+      </div>
+      <div class="zastepy-grid">
+        <div class="zastep-card" data-aos="fade-up">
+          <div class="zastep-img">
+            <img src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/moon.png" alt="Zastępowy 1" />
+          </div>
+          <div class="zastep-content">
+            <h3 class="zastep-name">Borealis</h3>
+            <p class="zastep-badge">Zastępowy: wyw. Ignacy Simlat</p>
+            <div class="zastep-details">
+              <p>Zbiórki: <strong>Piątki, 18:15</strong></p>
+              <p>Miejsce: <strong>SP 34, Kraków</strong></p>
+            </div>
+          </div>
+        </div>
+        <div class="zastep-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="zastep-img">
+            <img src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/noon.png" alt="Zastępowy 2" />
+          </div>
+          <div class="zastep-content">
+            <h3 class="zastep-name">Meridiem</h3>
+            <p class="zastep-badge">Zastępowy: wyw. Jan Palonek</p>
+            <div class="zastep-details">
+              <p>Zbiórki: <strong>Czwartki, 18:00</strong></p>
+              <p>Miejsce: <strong>SP 34, Kraków</strong></p>
+            </div>
+          </div>
+        </div>
+        <div class="zastep-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="zastep-img">
+            <img src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/west.png" alt="Zastępowy 3" />
+          </div>
+          <div class="zastep-content">
+            <h3 class="zastep-name">Occidens</h3>
+            <p class="zastep-badge">Zastępowy: wyw. Wojtek Chmielewski</p>
+            <div class="zastep-details">
+              <p>Zbiórki: <strong>Czwartki, 18:00</strong></p>
+              <p>Miejsce: <strong>SP 34, Kraków</strong></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kadra">
+      <div class="section-header" data-aos="fade-up">
+        <h2 class="section-title">Kadra</h2>
+      </div>
+      <div class="kadra-container">
+        <div class="kadra-main" data-aos="zoom-in">
+          <div class="osoba-card">
+            <div class="osoba-foto">
+              <img
+                src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/druzynowy-600.jpg"
+                width="1194"
+                height="1085"
+                loading="lazy"
+                decoding="async"
+                alt="Opis obrazka"
+                class="quality-photo"
+              />
+            </div>
+            <p class="osoba-role">Drużynowy</p>
+            <h4 class="osoba-name">pwd. Dominik Wójcik HO</h4>
+          </div>
+        </div>
+        <div class="kadra-subs">
+          <div class="osoba-card" data-aos="fade-right">
+            <div class="osoba-foto">
+              <img src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/ignacy.jpg" />
+            </div>
+            <p class="osoba-role">Przyboczny</p>
+            <h4 class="osoba-name">ćw. Ignacy Niedzielski</h4>
+          </div>
+          <div class="osoba-card" data-aos="fade-left">
+            <div class="osoba-foto">
+              <img src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/mihai.jpeg" />
+            </div>
+            <p class="osoba-role">Przyboczny</p>
+            <h4 class="osoba-name">ćw. Mihai Ruta</h4>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="galeria" style="background: var(--navy-blue)">
+      <div class="section-header" data-aos="fade-up">
+        <h2 class="section-title">Nasze akcje</h2>
+      </div>
+      <div class="gallery-grid">
+        <div class="gallery-card" data-aos="fade-up">
+          <img
+            src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/zbiorka_druzyny-1200.jpg"
+            width="4000"
+            height="3000"
+            loading="lazy"
+            decoding="async"
+            alt="Srodrocze"
+            class="quality-photo"
+          />
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-title">Śródrocze</h3>
+            <p class="gallery-card-desc">
+              Śródrocze to czas regularnej pracy i rozwoju, podczas którego
+              systematycznie zdobywamy nowe umiejętności oraz realizujemy cele
+              drużyny na comiesięcznych zbiórkach i wyjazdach.
+            </p>
+            <a
+              class="gallery-link"
+              href="https://photos.app.goo.gl/k7Un7FMNr9jdfbER7"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Zobacz zdjęcia</a
+            >
+          </div>
+        </div>
+
+        <div class="gallery-card" data-aos="fade-up" data-aos-delay="80">
+          <img src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/oboz.jpg" alt="Obóz" />
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-title">Obóz</h3>
+            <p class="gallery-card-desc">
+              Obóz harcerski to kulminacja całorocznej pracy – pełen przygód
+              czas spędzony w naturze, podczas którego sprawdzamy swoje
+              umiejętności i przeżywamy niezapomniane chwile razem.
+            </p>
+            <a
+              class="gallery-link"
+              style="background-color: gray"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Na ten moment jeszcze nie ma zdjęć</a
+            >
+          </div>
+        </div>
+
+        <div class="gallery-card" data-aos="fade-up" data-aos-delay="160">
+          <img
+            src="https://krowodrza.zhr.pl/wp-content/uploads/2026/04/zimowisko-1200.jpg"
+            width="4000"
+            height="3000"
+            loading="lazy"
+            decoding="async"
+            alt="Zimowisko"
+            class="quality-photo"
+          />
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-title">Zimowisko</h3>
+            <p class="gallery-card-desc">
+              To czas zimowych przygód, kiedy uczestniczymy w grach terenowych,
+              uczymy się nowych umiejętności i spędzamy aktywnie czas na świeżym
+              powietrzu. Wspólnie odkrywamy okolice i podejmujemy nowe wyzwania.
+            </p>
+            <a
+              class="gallery-link"
+              href="https://photos.app.goo.gl/VPHqp1MjbgnqMVvt9"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Zobacz zdjęcia</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kontakt">
+      <div class="section-header" data-aos="fade-up">
+        <h2 class="section-title">Kontakt</h2>
+      </div>
+      <div class="contact-layout" data-aos="zoom-in">
+        <div class="contact-info">
+          <h3>Skontaktuj się z nami</h3>
+          <p style="margin-top: 1rem; color: var(--text-gray)">
+            Masz pytania? Chcesz dołączyć? Napisz lub zadzwoń!
+          </p>
+          <div style="margin-top: 2rem">
+            <p>
+              <i class="fas fa-envelope" style="color: var(--sun-yellow)"></i>
+              <a href="mailto:dominik.wojcik@zhr.pl" style="color: inherit; text-decoration: none; transition: var(--transition);" onmouseover="this.style.color='var(--sun-yellow)'" onmouseout="this.style.color='inherit'">dominik.wojcik@zhr.pl</a>
+            </p>
+            <p style="margin-top: 1rem">
+              <i class="fas fa-phone" style="color: var(--sun-yellow)"></i>
+              Tel: <a href="tel:+48570834914" style="color: inherit; text-decoration: none; transition: var(--transition);" onmouseover="this.style.color='var(--sun-yellow)'" onmouseout="this.style.color='inherit'">+48 570 834 914</a>
+            </p>
+          </div>
+          <div class="social-links">
+            <a
+              href="https://www.facebook.com/profile.php?id=100079633860784"
+              target="_blank"
+              ><i class="fab fa-facebook-f"></i
+            ></a>
+          </div>
+        </div>
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2560.656634687316!2d19.918765934219742!3d50.073991813956326!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47165baebe0c51d9%3A0x3ed47d837518aebc!2sSzko%C5%82a%20Podstawowa%20nr%2034%20im.%20Obro%C5%84c%C3%B3w%20Poczty%20Polskiej%20w%20Gda%C5%84sku!5e0!3m2!1spl!2spl!4v1774347363950!5m2!1spl!2spl"
+          width="50%"
+          height="450"
+          style="border: 0; border-radius: 10px"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>
+        © 2026 10 Krakowska Drużyna Harcerzy "Dzieci Słońca" |
+        <a
+          href="https://krowodrza.zhr.pl"
+          style="color: white; text-decoration: none"
+          >Hufiec Kraków-Krowodrza ZHR</a
+        >
+      </p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100,
+      });
+    </script>
+  </body>
+</html>
