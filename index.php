@@ -6,28 +6,45 @@ $pages_dir = $theme_dir . '/pages/';
 $uri  = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
 $path = parse_url($uri, PHP_URL_PATH);
 
-// Wyodrębnij pierwszy segment ścieżki
+// Wyodrębnij wszystkie segmenty ścieżki
 $segments = array_values(array_filter(explode('/', trim($path, '/')), 'strlen'));
-$first    = isset($segments[0]) ? $segments[0] : '';
 
-// Prosta sanityzacja – tylko litery, cyfry, myślnik i podkreślenie
-$first = preg_replace('/[^a-zA-Z0-9_-]/', '', $first);
+// Prosta sanityzacja każdego segmentu
+$clean_segments = array_map(function($segment) {
+    return strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '', $segment));
+}, $segments);
 
-// Konwersja na małe litery (case-insensitive routing)
-$first = strtolower($first);
+$possible_files = [];
 
-// Określ docelowy plik - najpierw sprawdź .php, potem .html
-$target_php = $pages_dir . ($first !== '' ? $first . '.php' : 'index.php');
-$target_html = $pages_dir . ($first !== '' ? $first . '.html' : 'index.html');
+if (!empty($clean_segments)) {
+    // 1. Z podfolderami (np. huragan/skladki.php)
+    $possible_files[] = implode('/', $clean_segments);
+    
+    // 2. Łączone myślnikiem (np. huragan-skladki.php)
+    $possible_files[] = implode('-', $clean_segments);
+    
+    // 3. Fallback do pierwszego segmentu (np. huragan.php)
+    $possible_files[] = $clean_segments[0];
+} else {
+    $possible_files[] = 'index';
+}
 
-// Priorytet: najpierw PHP (dynamiczny), potem HTML (statyczny)
-if (file_exists($target_php)) {
-    include($target_php);
-    exit;
-} elseif (file_exists($target_html)) {
-    header('Content-Type: text/html; charset=UTF-8');
-    readfile($target_html);
-    exit;
+// Usuwamy duplikaty w wariantach
+$possible_files = array_unique($possible_files);
+
+// Priorytet: dla każdego wariantu najpierw sprawdzamy .php, potem .html
+foreach ($possible_files as $file_base) {
+    $target_php = $pages_dir . $file_base . '.php';
+    $target_html = $pages_dir . $file_base . '.html';
+
+    if (file_exists($target_php)) {
+        include($target_php);
+        exit;
+    } elseif (file_exists($target_html)) {
+        header('Content-Type: text/html; charset=UTF-8');
+        readfile($target_html);
+        exit;
+    }
 }
 
 // Brak statycznego pliku – renderuj standardowy szablon WordPressa
