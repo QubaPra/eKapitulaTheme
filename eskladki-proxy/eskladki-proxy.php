@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: eSkładki XLSX Proxy
- * Description: Pobiera XLSX w pamięci i zwraca wyłącznie dane dla podanego loginu.
- * Version: 1.0.0
+ * Description: Cachuje dane XLSX przez 5 minut i zwraca wyłącznie dane dla podanego loginu.
+ * Version: 1.1.0
  * Requires PHP: 7.4
  */
 
@@ -42,21 +42,44 @@ function eskladki_read_rows(\Shuchkin\SimpleXLSX $xlsx, $index) {
         throw new RuntimeException('Worksheet too large');
     }
     $rows = array_fill(0, $row_count, array_fill(0, $columns, null));
+    $first_column = $columns;
+    $first_row = $row_count;
     foreach ($worksheet->sheetData->row as $row) {
+        // SheetJS includes empty row elements in the inferred row range.
+        $first_row = min($first_row, max(0, (int) $row['r'] - 1));
         foreach ($row->c as $cell) {
             list($column, $line) = $xlsx->getIndex((string) $cell['r']);
             if ($column < 0 || $line < 0 || $column >= $columns || $line >= $row_count) {
                 throw new RuntimeException('Invalid cell coordinates');
             }
             $type = (string) $cell['t'];
-            if (!isset($cell->v) && $type !== 'inlineStr') continue;
+            $has_value = isset($cell->v) && (string) $cell->v !== '';
+            $has_formula = isset($cell->f);
+            // Unstyled/styled blanks without a type or formula do not establish
+            // the column origin. KONFIGURACJA starts at B, not A, in SheetJS.
+            if ($type === '' && !$has_value && !$has_formula) continue;
+            $first_column = min($first_column, $column);
+            if (!$has_value && $type !== 'inlineStr') {
+                if ($type === '' && $has_formula) $rows[$line][$column] = 0;
+                continue;
+            }
             $value = $xlsx->value($cell);
             // sheet_to_json({header: 1}) omits Excel error cells by default.
             if ($type === 'e') $value = null;
             $rows[$line][$column] = $value;
         }
     }
-    return $rows;
+    // If the XLSX declares a range, it takes precedence, as in SheetJS.
+    $range = (string) $worksheet->dimension['ref'];
+    if ($range !== '') {
+        list($first_column, $first_row) = $xlsx->getIndex(explode(':', $range)[0]);
+    }
+    if ($first_column < 0 || $first_row < 0) throw new RuntimeException('Invalid worksheet range');
+    if ($first_column >= $columns || $first_row >= $row_count) return [];
+    // Normalize to the original sheet_to_json({header: 1}) coordinate system.
+    return array_map(static function ($row) use ($first_column) {
+        return array_slice($row, $first_column);
+    }, array_slice($rows, $first_row));
 }
 
 /** Preserve only config cells consumed by excel.ts, including their row/column positions. */
@@ -177,6 +200,13 @@ function eskladki_lookup(WP_REST_Request $request) {
         return new WP_Error('eskladki_invalid_login', 'Nieprawidłowy login.', ['status' => 400]);
     }
     try {
+        // One shared snapshot for all logins, stored privately by WordPress.
+        // Version the key so old coordinate layouts are never reused.
+        $cache_key = 'eskladki_sheets_v2';
+        $sheets = get_transient($cache_key);
+        if (is_array($sheets)) {
+            return new WP_REST_Response(eskladki_select_rows($sheets, $login), 200);
+        }
         // Fixed server-side URL: the browser cannot choose a download target.
         $url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQrFAzpuwJqK6EsC4puGrSyENLwEkhQQI1GtEdvKoa0fjBzCNkzG6Vh9APqkytRGws_FeI9OeN7YIg8/pub?output=xlsx';
         $response = wp_remote_get($url . '&_t=' . time(), [
@@ -201,6 +231,14 @@ function eskladki_lookup(WP_REST_Request $request) {
         }
         if (!in_array('KONFIGURACJA', $xlsx->sheetNames(), true)) {
             throw new RuntimeException('Missing configuration');
+        }
+        // A concurrent request may have filled the cache during our download.
+        // Reuse it rather than overwriting it; no locks or waiting loops needed.
+        $concurrent_snapshot = get_transient($cache_key);
+        if (is_array($concurrent_snapshot)) {
+            $sheets = $concurrent_snapshot;
+        } else {
+            set_transient($cache_key, $sheets, 5 * MINUTE_IN_SECONDS);
         }
         return new WP_REST_Response(eskladki_select_rows($sheets, $login), 200);
     } catch (Throwable $error) {
